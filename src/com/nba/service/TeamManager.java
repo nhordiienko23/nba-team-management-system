@@ -1,5 +1,6 @@
 package com.nba.service;
 
+import com.nba.model.Player;
 import com.nba.model.Staff;
 
 import java.util.ArrayList;
@@ -33,7 +34,24 @@ public class TeamManager {
     public List<Staff> getAllStaff() {
         return new ArrayList<>(team.values());
     }
-
+    public List<Player> getHighestRatingStaff(){
+        List<Player> topRanked = new ArrayList<>();
+        int highestRank = -1;
+        for(Staff staffCurrent: team.values()){
+           if(staffCurrent instanceof Player){
+               Player player = (Player) staffCurrent;
+               int rating= player.getRating();
+               if(rating>highestRank){
+                   highestRank = rating;
+                   topRanked.clear();
+                   topRanked.add(player);
+               }else if(rating==highestRank){
+                   topRanked.add(player);
+               }
+           }
+        }
+        return topRanked;
+    }
     public List<Staff> getHighestPaidStaff() {
         List<Staff> topEarned =new ArrayList<>();
         double highestSalary = -1;
