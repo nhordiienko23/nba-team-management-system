@@ -1,5 +1,6 @@
 package com.nba.main;
 
+import com.nba.exception.StaffNotFoundException;
 import com.nba.model.*;
 import com.nba.service.TeamManager;
 
@@ -45,6 +46,18 @@ public class Main {
         }
         int idToFined = 5;
         System.out.println("\nGet staff by id " + idToFined + "\n" + teamManager.getStaffById(idToFined));
+        System.out.println("\n--- Testing Exception ---");
+        try {
+            System.out.println(teamManager.getStaffById(10));
+        }catch (StaffNotFoundException e){
+            System.out.println("Search Failed: "+e.getMessage());
+        }
+        try {
+            teamManager.removeStaff(99);
+        }catch (StaffNotFoundException e){
+            System.out.println("Action Failed: "+e.getMessage());
+        }
+
     }
 
     private static TeamManager getTeamManager() {

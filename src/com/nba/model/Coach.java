@@ -1,8 +1,9 @@
 package com.nba.model;
 
-public class Coach extends Staff{
+public class Coach extends Staff {
     private int experienceYears;
     private int championshipsWon;
+
     public Coach(String name, double baseSalary, int experienceYears, int championshipsWon) {
         super(name, baseSalary);
         this.experienceYears = experienceYears;
@@ -11,7 +12,7 @@ public class Coach extends Staff{
 
     // The coach receives 5% for each year of experience + a fixed reward for each ring (championship)
     @Override
-    public double calculateBonus(){
+    public double calculateBonus() {
         double expBonus = getBaseSalary() * (experienceYears * 0.05);
         double ringBonus = championshipsWon * 50000;
         return expBonus + ringBonus;
@@ -28,18 +29,18 @@ public class Coach extends Staff{
     }
 
     public void setChampionshipsWon(int championshipsWon) {
-        if(this.championshipsWon<championshipsWon){
+        if (this.championshipsWon < championshipsWon) {
             this.championshipsWon = championshipsWon;
-        }else {
+        } else {
             System.out.println("To update Championships Won, number must be bigger than previous number");
         }
 
     }
 
     public void setExperienceYears(int experienceYears) {
-        if(this.experienceYears<experienceYears){
+        if (this.experienceYears < experienceYears) {
             this.experienceYears = experienceYears;
-        }else {
+        } else {
             System.out.println("To update Experience Year, number must be bigger than previous number");
         }
     }
