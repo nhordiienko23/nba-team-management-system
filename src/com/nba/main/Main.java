@@ -1,5 +1,6 @@
 package com.nba.main;
 
+import com.nba.exception.InvalidStaffDataException;
 import com.nba.exception.StaffNotFoundException;
 import com.nba.model.*;
 import com.nba.service.TeamManager;
@@ -49,7 +50,32 @@ public class Main {
         } catch (StaffNotFoundException e) {
             System.out.println("Action Failed: " + e.getMessage());
         }
+        System.out.println("\n--- Testing Data Validation (Fail-Fast) ---");
+        testingDataValidation();
 
+    }
+
+    public static void testingDataValidation(){
+        try {
+            System.out.println("Trying to create player with rating 150...");
+            Player brokenPlayer = new Player("Fake Star", 500000, 150, Position.C);
+        } catch (InvalidStaffDataException e) {
+            System.err.println("Validation Caught: " + e.getMessage());
+        }
+
+        try {
+            System.out.println("\nTrying to create coach with negative salary...");
+            Coach brokenCoach = new Coach("Bad Coach", -1000, 5, 0);
+        } catch (InvalidStaffDataException e) {
+            System.err.println("Validation Caught: " + e.getMessage());
+        }
+
+        try {
+            System.out.println("\nTrying to create player without any position...");
+            Player noPosPlayer = new Player("Ghost Player", 300000, 75); // Массив позиций будет пуст
+        } catch (InvalidStaffDataException e) {
+            System.err.println("Validation Caught: " + e.getMessage());
+        }
     }
 
     private static TeamManager getTeamManager() {
