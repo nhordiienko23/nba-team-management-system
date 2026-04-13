@@ -3,8 +3,9 @@ package com.nba.model;
 public class Player extends Staff {
     private int rating;
     private String position;
-    public Player(String name, double baseSalary ,String position,int rating){
-        super(name,baseSalary);
+
+    public Player(String name, double baseSalary, String position, int rating) {
+        super(name, baseSalary);
         this.position = position;
         this.rating = rating;
     }
@@ -22,26 +23,25 @@ public class Player extends Staff {
     }
 
     public void setRating(int rating) {
-        if(rating>0){
+        if (rating > 0) {
             this.rating = rating;
-        }else {
+        } else {
             System.out.println("Rating must be positive number!");
         }
     }
 
-    //If the rating is > 90, the bonus is 20% of the salary.
+    //If the rating is > 90, the bonus for player is 20% of the salary.
     @Override
-    public double calculateBonus(){
-        if(rating>90){
-          return getBaseSalary() *0.2;
+    public double calculateBonus() {
+        if (rating > 90) {
+            return getBaseSalary() * 0.2;
         }
         return 0;
     }
 
     @Override
-    public String toString(){
-        return super.toString() + String.format(" | Pos: %s | Rating: %d | Bonus: $%,.0f",
-                position, rating, calculateBonus());
+    public String toString() {
+        return super.toString() + String.format(" | Pos: %s | Rating: %d | Bonus: $%,.0f", position, rating, calculateBonus());
     }
 
 }
