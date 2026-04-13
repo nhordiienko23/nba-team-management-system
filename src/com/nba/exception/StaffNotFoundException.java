@@ -1,7 +1,7 @@
 package com.nba.exception;
 
 public class StaffNotFoundException extends RuntimeException {
-    public StaffNotFoundException(String message) {
-        super(message);
+    public StaffNotFoundException(int id) {
+        super("Error: Staff member with ID " + id + " does not exist!");
     }
 }
