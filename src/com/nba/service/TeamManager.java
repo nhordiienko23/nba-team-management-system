@@ -7,10 +7,12 @@ import com.nba.model.Coach;
 import com.nba.model.Player;
 import com.nba.model.Position;
 import com.nba.model.Staff;
+import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.*;
 
+@Service
 public class TeamManager {
     private Map<Integer, Staff> team;
 
@@ -27,7 +29,15 @@ public class TeamManager {
             throw new StaffNotFoundException(id);
         }
     }
-
+    public List<Player> getPlayers(){
+        List<Player> players = new ArrayList<>();
+        for (Staff staff:team.values()){
+            if (staff instanceof Player player){
+                players.add(player);
+            }
+        }
+        return players;
+    }
     public Staff getStaffById(int id) {
         validateStaffExists(id);
         return team.get(id);

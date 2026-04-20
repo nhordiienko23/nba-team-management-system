@@ -15,8 +15,8 @@ public class Coach extends Staff {
     }
 
     private void validateChampionshipsWon(int championshipsWon) {
-        if (championshipsWon <= 0) {
-            throw new InvalidStaffDataException("Championships Won must be positive number");
+        if (championshipsWon <0) {
+            throw new InvalidStaffDataException("Championships Won must be positive number or null");
         } else if (championshipsWon < this.championshipsWon) {
             throw new InvalidStaffDataException("Championships Won cannot decrease!");
         }
