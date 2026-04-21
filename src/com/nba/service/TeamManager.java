@@ -20,6 +20,10 @@ public class TeamManager {
         this.team = new HashMap<>();
     }
 
+    public void updateStaff(int id, Staff updateStaff){
+        validateStaffExists(id);
+        team.put(id,updateStaff);
+    }
     public void addStaff(Staff staff) {
         team.put(staff.getId(), staff);
     }
