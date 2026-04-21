@@ -1,6 +1,8 @@
 package com.nba.service;
 
+import com.nba.dto.StaffDto;
 import com.nba.exception.InvalidArgumentsException;
+import com.nba.exception.InvalidStaffDataException;
 import com.nba.exception.StaffNotFoundException;
 import com.nba.model.Coach;
 import com.nba.model.Player;
@@ -20,12 +22,42 @@ public class TeamManager {
         this.team = new HashMap<>();
     }
 
-    public void updateStaff(int id, Staff updateStaff){
-        validateStaffExists(id);
-        team.put(id,updateStaff);
+    public Staff convertToStaff(StaffDto dto) {
+        if ("player".equalsIgnoreCase(dto.type)) {
+            return new Player(dto.name, dto.baseSalary, dto.rating, dto.positions.toArray(new Position[0]));
+        } else if ("coach".equalsIgnoreCase(dto.type)) {
+            return new Coach(dto.name, dto.baseSalary, dto.experienceYears, dto.championshipsWon);
+        }
+        throw new InvalidStaffDataException("Unknown staff type");
     }
+
+    public void updateStaff(int id, Staff updateStaff) {
+        validateStaffExists(id);
+        Staff existingStaff = team.get(id);
+        existingStaff.setName(updateStaff.getName());
+        existingStaff.setBaseSalary(updateStaff.getBaseSalary());
+
+        if (existingStaff instanceof Player && updateStaff instanceof Player) {
+            Player existingPlayer = (Player) existingStaff;
+            Player updatePlayer = (Player) updateStaff;
+            Position[] positions = updatePlayer.getPositions().toArray(new Position[0]);
+            existingPlayer.recordNewAchievements(updatePlayer.getRating(), positions);
+        } else if (existingStaff instanceof Coach && updateStaff instanceof Coach) {
+            Coach existingCoach = (Coach) existingStaff;
+            Coach updateCoach = (Coach) updateStaff;
+            existingCoach.recordNewAchievements(updateCoach.getExperienceYears(), updateCoach.getChampionshipsWon());
+        }
+    }
+
     public void addStaff(Staff staff) {
+        if (staff.getId() == 0) {
+            throw new InvalidStaffDataException("Ошибка: ID объекта не был присвоен при создании");
+        }
+        if (team.containsKey(staff.getId())) {
+            throw new InvalidStaffDataException("Сотрудник с таким ID уже существует");
+        }
         team.put(staff.getId(), staff);
+
     }
 
     private void validateStaffExists(int id) {
@@ -33,15 +65,27 @@ public class TeamManager {
             throw new StaffNotFoundException(id);
         }
     }
-    public List<Player> getPlayers(){
+
+    public List<Player> getPlayers() {
         List<Player> players = new ArrayList<>();
-        for (Staff staff:team.values()){
-            if (staff instanceof Player player){
+        for (Staff staff : team.values()) {
+            if (staff instanceof Player player) {
                 players.add(player);
             }
         }
         return players;
     }
+
+    public List<Coach> getCoaches() {
+        List<Coach> coaches = new ArrayList<>();
+        for (Staff staff : team.values()) {
+            if (staff instanceof Coach coach) {
+                coaches.add(coach);
+            }
+        }
+        return coaches;
+    }
+
     public Staff getStaffById(int id) {
         validateStaffExists(id);
         return team.get(id);
@@ -66,8 +110,8 @@ public class TeamManager {
         for (Staff staff : team.values()) {
             if (staff instanceof Player) {
                 Player player = (Player) staff;
-                for (Position position :player.getPositions()){
-                    if (searchSet.contains(position)){
+                for (Position position : player.getPositions()) {
+                    if (searchSet.contains(position)) {
                         result.add(player);
                         break;
                     }
@@ -201,6 +245,10 @@ public class TeamManager {
         try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(path.toFile()))) {
             team = (Map<Integer, Staff>) objectInputStream.readObject();
             System.out.println("Team data loaded successfully from " + path.getFileName());
+            int maxId = team.keySet().stream()
+                    .max(Integer::compare)
+                    .orElse(0);
+            Staff.setNextId(maxId + 1);
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error loading team: " + e.getMessage());
         }

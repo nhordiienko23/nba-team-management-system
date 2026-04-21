@@ -14,19 +14,26 @@ public class Coach extends Staff {
         this.championshipsWon = championshipsWon;
     }
 
+
+    public  void recordNewAchievements(int experienceYears, int championshipsWon){
+        if (championshipsWon < this.championshipsWon) {
+            throw new InvalidStaffDataException("Championships Won cannot decrease!");
+        }
+        if(experienceYears < this.experienceYears) {
+            throw new InvalidStaffDataException("Experience year cannot decrease!");
+        }
+        setExperienceYears(experienceYears);
+        setChampionshipsWon(championshipsWon);
+    }
     private void validateChampionshipsWon(int championshipsWon) {
         if (championshipsWon <0) {
             throw new InvalidStaffDataException("Championships Won must be positive number or null");
-        } else if (championshipsWon < this.championshipsWon) {
-            throw new InvalidStaffDataException("Championships Won cannot decrease!");
         }
     }
 
     private void validateExperienceYear(int experienceYears) {
         if (experienceYears <= 0) {
             throw new InvalidStaffDataException("Experience year must be positive number");
-        } else if (experienceYears < this.experienceYears) {
-            throw new InvalidStaffDataException("Experience year cannot decrease!");
         }
     }
 
@@ -48,12 +55,12 @@ public class Coach extends Staff {
         return championshipsWon;
     }
 
-    public void setChampionshipsWon(int championshipsWon) {
+    protected void setChampionshipsWon(int championshipsWon) {
         validateChampionshipsWon(championshipsWon);
         this.championshipsWon = championshipsWon;
     }
 
-    public void setExperienceYears(int experienceYears) {
+    protected void setExperienceYears(int experienceYears) {
         validateExperienceYear(experienceYears);
         this.experienceYears = experienceYears;
     }

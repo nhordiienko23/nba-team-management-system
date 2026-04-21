@@ -1,5 +1,7 @@
 package com.nba.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.nba.exception.InvalidStaffDataException;
@@ -20,12 +22,17 @@ public abstract class Staff implements Serializable, Taxable {
     private String name;
     private double baseSalary;
 
-    public Staff(String name, double baseSalary) {
+
+    public Staff(@JsonProperty("name") String name, @JsonProperty("baseSalary") double baseSalary) {
         this.id = idCounter++;
         validateName(name);
         this.name = name;
         validateBaseSalary(baseSalary);
         this.baseSalary = baseSalary;
+    }
+
+    public static void setNextId(int nextId) {
+        idCounter = nextId;
     }
     private void validateName(String name){
         if(name ==null || name.isEmpty()){

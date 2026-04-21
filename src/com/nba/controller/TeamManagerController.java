@@ -1,5 +1,6 @@
 package com.nba.controller;
 
+import com.nba.dto.StaffDto;
 import com.nba.model.Coach;
 import com.nba.model.Player;
 import com.nba.model.Position;
@@ -22,7 +23,8 @@ public class TeamManagerController {
     }
 
     @PostMapping("staff/add")
-    public String addStaff(@RequestBody Staff staff) {
+    public String addStaff(@RequestBody StaffDto dto) {
+        Staff staff = teamManager.convertToStaff(dto);
         teamManager.addStaff(staff);
         teamManager.saveTeamToFile(path);
         return "Staff " + staff.getName() + " added successfully!";
@@ -34,7 +36,7 @@ public class TeamManagerController {
         teamManager.saveTeamToFile(path);
         return "Staff with ID " + id + " updated successfully!";
     }
-    
+
     @GetMapping("staff/{id}")
     public Staff getStaffById(@PathVariable int id) {
         return teamManager.getStaffById(id);
@@ -47,10 +49,17 @@ public class TeamManagerController {
         return "Staff with ID " + id + " was successfully removed.";
     }
 
-
+    @GetMapping("/staff")
+    public List<Staff> getAllStaff(){
+        return teamManager.getAllStaff();
+    }
     @GetMapping("/players")
     public List<Player> getAllPlayers() {
         return teamManager.getPlayers();
+    }
+    @GetMapping("coaches")
+    public List<Coach> getAllCoaches(){
+        return teamManager.getCoaches();
     }
 
     @GetMapping("/highest-paid")
