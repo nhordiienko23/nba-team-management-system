@@ -6,6 +6,7 @@ import com.nba.exception.InvalidStaffDataException;
 import com.nba.exception.StaffNotFoundException;
 import com.nba.model.*;
 import com.nba.repository.StaffRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -117,7 +118,7 @@ public class TeamManager {
     }
 
     public List<Staff> getAllStaff() {
-        return staffRepository.findAll();
+        return staffRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     public Staff getStaffById(int id) {
@@ -130,12 +131,12 @@ public class TeamManager {
     }
 
     public List<Player> getPlayers() {
-        return staffRepository.findAll().stream()
+        return staffRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
                 .filter(s -> s instanceof Player).map(s -> (Player) s).collect(Collectors.toList());
     }
 
     public List<Coach> getCoaches() {
-        return staffRepository.findAll().stream()
+        return staffRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
                 .filter(s -> s instanceof Coach).map(s -> (Coach) s).collect(Collectors.toList());
     }
 
@@ -147,27 +148,39 @@ public class TeamManager {
                 .collect(Collectors.toList());
     }
 
+
     public List<Player> getPlayersByBonus(double minBonus) {
         if (minBonus < 0) throw new InvalidArgumentsException("Bonus must be positive");
-        return getPlayers().stream().filter(p -> p.calculateBonus() >= minBonus).collect(Collectors.toList());
+        return getPlayers().stream()
+                .filter(p -> p.calculateBonus() >= minBonus)
+                .sorted((p1, p2) -> Double.compare(p2.calculateBonus(), p1.calculateBonus())) // По убыванию
+                .collect(Collectors.toList());
     }
 
     public List<Coach> getCoachesByChampionshipWon(int minChampionshipWon) {
-        return getCoaches().stream().filter(c -> c.getChampionshipsWon() >= minChampionshipWon).collect(Collectors.toList());
+        return getCoaches().stream()
+                .filter(c -> c.getChampionshipsWon() >= minChampionshipWon)
+                .sorted((c1, c2) -> Integer.compare(c2.getChampionshipsWon(), c1.getChampionshipsWon())) // По убыванию
+                .collect(Collectors.toList());
     }
 
     public List<Coach> getCoachByExperienceYears(int minExperienceYears) {
-        return getCoaches().stream().filter(c -> c.getExperienceYears() >= minExperienceYears).collect(Collectors.toList());
+        return getCoaches().stream()
+                .filter(c -> c.getExperienceYears() >= minExperienceYears)
+                .sorted((c1, c2) -> Integer.compare(c2.getExperienceYears(), c1.getExperienceYears())) // По убыванию
+                .collect(Collectors.toList());
     }
 
     public List<Staff> getByName(String name) {
-        return staffRepository.findAll().stream()
+        return staffRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream() // По алфавиту
                 .filter(s -> s.getName().toLowerCase().contains(name.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
     public List<Staff> getStaffByBaseSalary(double minBaseSalary) {
-        return staffRepository.findAll().stream().filter(s -> s.getBaseSalary() >= minBaseSalary).collect(Collectors.toList());
+        return staffRepository.findAll(Sort.by(Sort.Direction.DESC, "baseSalary")).stream() // По убыванию зарплаты
+                .filter(s -> s.getBaseSalary() >= minBaseSalary)
+                .collect(Collectors.toList());
     }
 
     public List<Player> getHighestRatingPlayers() {
