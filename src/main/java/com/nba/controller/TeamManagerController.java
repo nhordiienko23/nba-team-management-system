@@ -1,7 +1,10 @@
 package com.nba.controller;
 
 import com.nba.dto.StaffDto;
-import com.nba.model.*;
+import com.nba.model.Coach;
+import com.nba.model.Player;
+import com.nba.model.Position;
+import com.nba.model.Staff;
 import com.nba.service.TeamManager;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

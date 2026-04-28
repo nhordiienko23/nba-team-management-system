@@ -1,8 +1,10 @@
 package com.nba;
 
 import com.nba.exception.InvalidStaffDataException;
-import com.nba.exception.StaffNotFoundException;
-import com.nba.model.*;
+import com.nba.model.Coach;
+import com.nba.model.Player;
+import com.nba.model.Position;
+import com.nba.model.Staff;
 import com.nba.service.TeamManager;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;

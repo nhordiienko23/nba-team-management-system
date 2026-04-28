@@ -1,8 +1,12 @@
 package com.nba.service;
 
 import com.nba.dto.StaffDto;
-import com.nba.exception.*;
-import com.nba.model.*;
+import com.nba.exception.InvalidStaffDataException;
+import com.nba.exception.StaffNotFoundException;
+import com.nba.model.Coach;
+import com.nba.model.Player;
+import com.nba.model.Position;
+import com.nba.model.Staff;
 import com.nba.repository.StaffRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -11,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -29,6 +32,27 @@ public class TeamManager {
         if (start > list.size()) return new PageImpl<>(Collections.emptyList(), pageable, list.size());
         return new PageImpl<>(list.subList(start, end), pageable, list.size());
     }
+
+    // -- Overloaded methods for easy access in Main.java --
+
+    public List<Staff> getAllStaff() {
+        return staffRepository.findAll(Sort.by("id").ascending());
+    }
+
+    public List<Staff> getHighestPaidStaff() {
+        double maxSalary = staffRepository.findAll().stream().mapToDouble(Staff::calculateTotalSalary).max().orElse(-1);
+        return staffRepository.findAll().stream()
+                .filter(s -> s.calculateTotalSalary() == maxSalary)
+                .sorted(Comparator.comparing(Staff::getId))
+                .toList();
+    }
+
+    // -- Existing methods with Pageable --
+
+    public Page<Staff> getAllStaff(Pageable pageable) {
+        return staffRepository.findAll(PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("id").ascending()));
+    }
+
 
     public void validateStaffDtoToUpdate(int id, StaffDto dto) {
         Staff existingStaff = getStaffById(id);
@@ -71,19 +95,26 @@ public class TeamManager {
     @CacheEvict(value = {"highestPaidStaff", "highestRatingPlayers"}, allEntries = true)
     public void addStaff(Staff staff) { staffRepository.save(staff); }
 
-    public List<Staff> getAllStaff() { return staffRepository.findAll(); }
-    public Page<Staff> getAllStaff(Pageable pageable) { return staffRepository.findAll(pageable); }
     public Staff getStaffById(int id) { return staffRepository.findById(id).orElseThrow(() -> new StaffNotFoundException(id)); }
 
     @CacheEvict(value = {"highestPaidStaff", "highestRatingPlayers"}, allEntries = true)
     public void removeStaff(int id) { staffRepository.deleteById(id); }
 
-    public Page<Player> getPlayers(Pageable p) { return toPage(staffRepository.findAll().stream().filter(s -> s instanceof Player).map(s -> (Player) s).toList(), p); }
-    public Page<Coach> getCoaches(Pageable p) { return toPage(staffRepository.findAll().stream().filter(s -> s instanceof Coach).map(s -> (Coach) s).toList(), p); }
+    public Page<Player> getPlayers(Pageable p) {
+        return toPage(staffRepository.findAll().stream().filter(s -> s instanceof Player).map(s -> (Player) s)
+                .sorted(Comparator.comparing(Staff::getId)).toList(), p);
+    }
+
+    public Page<Coach> getCoaches(Pageable p) {
+        return toPage(staffRepository.findAll().stream().filter(s -> s instanceof Coach).map(s -> (Coach) s)
+                .sorted(Comparator.comparing(Staff::getId)).toList(), p);
+    }
 
     public Page<Player> getPlayersByPositions(Position[] pos, Pageable p) {
         Set<Position> set = Set.of(pos);
-        return toPage(staffRepository.findAll().stream().filter(s -> s instanceof Player).map(s -> (Player) s).filter(pl -> !Collections.disjoint(pl.getPositions(), set)).toList(), p);
+        return toPage(staffRepository.findAll().stream().filter(s -> s instanceof Player).map(s -> (Player) s)
+                .filter(pl -> !Collections.disjoint(pl.getPositions(), set))
+                .sorted(Comparator.comparing(Staff::getId)).toList(), p);
     }
 
     public Page<Player> getPlayersByBonus(double min, Pageable p) {
@@ -115,16 +146,13 @@ public class TeamManager {
     public Page<Player> getHighestRatingPlayers(Pageable p) {
         List<Player> pl = staffRepository.findAll().stream().filter(s -> s instanceof Player).map(s -> (Player) s).toList();
         int max = pl.stream().mapToInt(Player::getRating).max().orElse(-1);
-        return toPage(pl.stream().filter(p_ -> p_.getRating() == max).toList(), p);
-    }
-
-    public List<Staff> getHighestPaidStaff() {
-        return staffRepository.findAll().stream().filter(s -> s.calculateTotalSalary() == staffRepository.findAll().stream()
-                .mapToDouble(Staff::calculateTotalSalary).max().orElse(-1)).toList();
+        return toPage(pl.stream().filter(p_ -> p_.getRating() == max).sorted(Comparator.comparing(Staff::getId)).toList(), p);
     }
 
     @Cacheable(value = "highestPaidStaff")
     public Page<Staff> getHighestPaidStaff(Pageable p) {
-        return toPage(getHighestPaidStaff().stream().sorted(Comparator.comparingDouble(Staff::calculateTotalSalary).reversed()).toList(), p);
+        double maxSalary = staffRepository.findAll().stream().mapToDouble(Staff::calculateTotalSalary).max().orElse(-1);
+        return toPage(staffRepository.findAll().stream().filter(s -> s.calculateTotalSalary() == maxSalary)
+                .sorted(Comparator.comparing(Staff::getId)).toList(), p);
     }
 }
